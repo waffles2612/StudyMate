@@ -6,15 +6,24 @@ const multer = require("multer");
 const fs = require("fs");
 let pdfParse;
 try {
-  const pdfParseModule = require("pdf-parse");
-  pdfParse =
-    typeof pdfParseModule === "function"
-      ? pdfParseModule
-      : pdfParseModule.default;
+  const imported = require("pdf-parse");
+
+  // handle all possible module shapes
+  if (typeof imported === "function") {
+    pdfParse = imported;
+  } else if (typeof imported.default === "function") {
+    pdfParse = imported.default;
+  } else if (imported.default && typeof imported.default.default === "function") {
+    pdfParse = imported.default.default;
+  } else {
+    throw new Error("pdf-parse function not found in module");
+  }
+
   console.log("✅ pdf-parse module loaded successfully:", typeof pdfParse);
 } catch (err) {
   console.error("❌ Failed to load pdf-parse properly:", err);
 }
+
 
 
 
