@@ -7,22 +7,24 @@ const fs = require("fs");
 let pdfParse;
 try {
   const imported = require("pdf-parse");
+  console.log("📦 pdf-parse import result:", imported);
 
-  // handle all possible module shapes
+  // ✅ For pdf-parse v2.4.5 and Node 22 (Render)
   if (typeof imported === "function") {
     pdfParse = imported;
-  } else if (typeof imported.default === "function") {
+  } else if (imported && typeof imported.default === "function") {
     pdfParse = imported.default;
-  } else if (imported.default && typeof imported.default.default === "function") {
+  } else if (imported?.default?.default && typeof imported.default.default === "function") {
     pdfParse = imported.default.default;
   } else {
-    throw new Error("pdf-parse function not found in module");
+    throw new Error("pdf-parse did not export a valid function");
   }
 
-  console.log("✅ pdf-parse module loaded successfully:", typeof pdfParse);
+  console.log("✅ pdf-parse initialized as:", typeof pdfParse);
 } catch (err) {
-  console.error("❌ Failed to load pdf-parse properly:", err);
+  console.error("❌ Failed to load pdf-parse:", err);
 }
+
 
 
 
