@@ -1,3 +1,4 @@
+// src/App.js
 import React, { useState, useEffect } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
@@ -21,7 +22,7 @@ function AppWrapper() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // ✅ Handle Google redirect result (only runs after login)
+  // Handle Google redirect result (only runs after login via redirect)
   useEffect(() => {
     getRedirectResult(auth)
       .then((result) => {
@@ -42,7 +43,7 @@ function AppWrapper() {
           };
           setUser(userData);
 
-          // ✅ Navigate directly to dashboard
+          // Navigate directly to dashboard
           navigate("/dashboard");
         }
       })
@@ -53,7 +54,7 @@ function AppWrapper() {
       });
   }, [navigate]);
 
-  // ✅ Auth state persistence — redirects if already logged in
+  // Auth state persistence — redirects if already logged in
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -65,7 +66,7 @@ function AppWrapper() {
         };
         setUser(userData);
 
-        // ✅ Redirect only when on root path
+        // Redirect only when on root path
         if (window.location.pathname === "/") {
           navigate("/dashboard");
         }
@@ -78,13 +79,13 @@ function AppWrapper() {
     return () => unsubscribe();
   }, [navigate]);
 
-  // ✅ Login handler (popup for local, redirect for production)
+  // Login handler — try popup first, fallback to redirect if popup blocked/fails
   const handleLogin = async () => {
     try {
       provider.addScope("https://www.googleapis.com/auth/calendar.events");
 
-      if (window.location.hostname.includes("localhost")) {
-        // Local testing
+      // Try popup first (avoids redirect / third-party cookie issues)
+      try {
         const result = await signInWithPopup(auth, provider);
         const credential = GoogleAuthProvider.credentialFromResult(result);
         const accessToken = credential?.accessToken;
@@ -102,8 +103,10 @@ function AppWrapper() {
         };
         setUser(userData);
         navigate("/dashboard");
-      } else {
-        // ✅ Use redirect login for Vercel
+        return;
+      } catch (popupError) {
+        // If popup is blocked or fails, fallback to redirect
+        console.warn("Popup login failed — falling back to redirect:", popupError);
         await signInWithRedirect(auth, provider);
       }
     } catch (error) {
@@ -112,7 +115,7 @@ function AppWrapper() {
     }
   };
 
-  // ✅ Logout handler
+  // Logout handler
   const handleLogout = async () => {
     try {
       await signOut(auth);
