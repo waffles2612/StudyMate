@@ -1,7 +1,6 @@
-// src/firebase.js
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAnalytics, isSupported } from "firebase/analytics";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getDatabase } from "firebase/database";
 
 // ✅ Your web app's Firebase configuration
@@ -10,10 +9,10 @@ const firebaseConfig = {
   authDomain: "studymate-e2268.firebaseapp.com",
   databaseURL: "https://studymate-e2268-default-rtdb.firebaseio.com",
   projectId: "studymate-e2268",
-  storageBucket: "studymate-e2268.appspot.com", // ✅ fixed this line
+  storageBucket: "studymate-e2268.appspot.com",
   messagingSenderId: "983818270750",
   appId: "1:983818270750:web:ac96e821c515a62f84960f",
-  measurementId: "G-BL9EM2JTXD"
+  measurementId: "G-BL9EM2JTXD",
 };
 
 // ✅ Initialize Firebase once — avoid double initialization
@@ -31,6 +30,10 @@ if (typeof window !== "undefined") {
 
 // ✅ Initialize Auth
 const auth = getAuth(app);
+
+// ✅ Persist Firebase user session in browser storage
+setPersistence(auth, browserLocalPersistence);
+
 const provider = new GoogleAuthProvider();
 
 // ✅ Add Google Calendar access permission

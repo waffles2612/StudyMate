@@ -6,7 +6,6 @@ import LandingPage from "./components/LandingPage";
 import Dashboard from "./components/Dashboard";
 import {
   signInWithPopup,
-  signInWithRedirect,
   getRedirectResult,
   signOut,
   onAuthStateChanged,
@@ -22,41 +21,24 @@ function AppWrapper() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Handle Google redirect result (only runs after login via redirect)
+  // ✅ Debug redirect results (in case any pending login remains)
   useEffect(() => {
     getRedirectResult(auth)
       .then((result) => {
-        if (result?.user) {
-          console.log("✅ Redirect login success:", result.user.email);
-          const credential = GoogleAuthProvider.credentialFromResult(result);
-          const accessToken = credential?.accessToken;
-
-          if (accessToken) {
-            localStorage.setItem("googleAccessToken", accessToken);
-          }
-
-          const userData = {
-            name: result.user.displayName,
-            email: result.user.email,
-            picture: result.user.photoURL,
-            uid: result.user.uid,
-          };
-          setUser(userData);
-
-          // Navigate directly to dashboard
-          navigate("/dashboard");
-        }
+        console.log("📦 redirect result:", result);
       })
       .catch((error) => {
         if (error.code !== "auth/no-auth-event") {
           console.error("Redirect login error:", error);
         }
       });
-  }, [navigate]);
+  }, []);
 
-  // Auth state persistence — redirects if already logged in
+  // ✅ Watch Firebase Auth state (this is what controls redirects)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log("🔥 onAuthStateChanged fired:", currentUser);
+
       if (currentUser) {
         const userData = {
           name: currentUser.displayName,
@@ -66,56 +48,56 @@ function AppWrapper() {
         };
         setUser(userData);
 
-        // Redirect only when on root path
         if (window.location.pathname === "/") {
           navigate("/dashboard");
         }
       } else {
         setUser(null);
       }
+
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, [navigate]);
 
-  // Login handler — try popup first, fallback to redirect if popup blocked/fails
-  const handleLogin = async () => {
-    try {
-      provider.addScope("https://www.googleapis.com/auth/calendar.events");
+  // ✅ Simplified login (popup only)
+  let loginInProgress = false; // add this outside AppWrapper()
 
-      // Try popup first (avoids redirect / third-party cookie issues)
-      try {
-        const result = await signInWithPopup(auth, provider);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        const accessToken = credential?.accessToken;
+const handleLogin = async () => {
+  if (loginInProgress) return; // 🔒 prevent multiple parallel logins
+  loginInProgress = true;
 
-        if (accessToken) {
-          localStorage.setItem("googleAccessToken", accessToken);
-          console.log("✅ Google Access Token saved:", accessToken);
-        }
+  try {
+    provider.addScope("https://www.googleapis.com/auth/calendar.events");
 
-        const userData = {
-          name: result.user.displayName,
-          email: result.user.email,
-          picture: result.user.photoURL,
-          uid: result.user.uid,
-        };
-        setUser(userData);
-        navigate("/dashboard");
-        return;
-      } catch (popupError) {
-        // If popup is blocked or fails, fallback to redirect
-        console.warn("Popup login failed — falling back to redirect:", popupError);
-        await signInWithRedirect(auth, provider);
-      }
-    } catch (error) {
-      console.error("❌ Google login failed:", error);
-      alert("Google login failed. Please check the console for details.");
+    const result = await signInWithPopup(auth, provider);
+    const credential = GoogleAuthProvider.credentialFromResult(result);
+    const accessToken = credential?.accessToken;
+
+    if (accessToken) {
+      localStorage.setItem("googleAccessToken", accessToken);
+      console.log("✅ Google Access Token saved:", accessToken);
     }
-  };
 
-  // Logout handler
+    const userData = {
+      name: result.user.displayName,
+      email: result.user.email,
+      picture: result.user.photoURL,
+      uid: result.user.uid,
+    };
+    setUser(userData);
+    navigate("/dashboard");
+  } catch (popupError) {
+    console.warn("Popup login failed — falling back to redirect:", popupError);
+    await signInWithRedirect(auth, provider);
+  } finally {
+    loginInProgress = false; // unlock after completion
+  }
+};
+
+
+  // ✅ Logout handler
   const handleLogout = async () => {
     try {
       await signOut(auth);
