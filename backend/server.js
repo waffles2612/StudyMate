@@ -4,14 +4,16 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs");
-let pdfParse;
+
 const pdfParse = require("pdf-parse");
 console.log("✅ pdf-parse version loaded successfully!");
+
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-//const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
 const admin = require("firebase-admin");
+
 // ✅ Load .env first
 dotenv.config();
+
 
 
 // ✅ Load service account JSON from environment variable
