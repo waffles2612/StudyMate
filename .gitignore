@@ -2,7 +2,7 @@
 # Sensitive and large files
 backend/uploads/
 backend/.env
-backend/serviceAccountKey.json
+# backend/serviceAccountKey.json
 frontend/.env
 *.env
 frontend/node_modules/
