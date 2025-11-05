@@ -61,9 +61,13 @@ export default function App() {
       formData.append("file", file);
       formData.append("numQuestions", numQuestions);
 
-      const res = await axios.post("http://localhost:3001/upload-pdf", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await axios.post(
+  `${process.env.REACT_APP_BACKEND_URL}/upload-pdf`,
+  formData,
+  {
+    headers: { "Content-Type": "multipart/form-data" },
+  }
+);
 
       setQuiz(res.data.quiz || []);
       setAnswers({});
