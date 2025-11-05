@@ -4,7 +4,10 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs");
-const pdfParse = require("pdf-parse").default || require("pdf-parse");
+const pdfParseModule = require("pdf-parse");
+const pdfParse = pdfParseModule.default || pdfParseModule;
+
+
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 //const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
 const admin = require("firebase-admin");
