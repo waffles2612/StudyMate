@@ -6,15 +6,26 @@ const multer = require("multer");
 const fs = require("fs");
 const pdfParse = require("pdf-parse");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-
+//const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
 const admin = require("firebase-admin");
 
- // download from Firebase Console
+// ✅ Load service account JSON from environment variable
+let serviceAccount = null;
 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://studymate-e2268-default-rtdb.firebaseio.com/",
-});
+if (process.env.SERVICE_ACCOUNT_KEY) {
+  try {
+    serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: "https://studymate-e2268-default-rtdb.firebaseio.com/",
+    });
+    console.log("✅ Firebase initialized successfully!");
+  } catch (err) {
+    console.error("❌ Failed to parse SERVICE_ACCOUNT_KEY JSON:", err);
+  }
+} else {
+  console.error("❌ SERVICE_ACCOUNT_KEY not found in environment variables!");
+}
 
 const db = admin.database();
 
