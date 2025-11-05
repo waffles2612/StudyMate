@@ -4,8 +4,18 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const multer = require("multer");
 const fs = require("fs");
-const pdfParseModule = require("pdf-parse");
-const pdfParse = pdfParseModule.default || pdfParseModule;
+let pdfParse;
+try {
+  const pdfParseModule = require("pdf-parse");
+  pdfParse =
+    typeof pdfParseModule === "function"
+      ? pdfParseModule
+      : pdfParseModule.default;
+  console.log("✅ pdf-parse module loaded successfully:", typeof pdfParse);
+} catch (err) {
+  console.error("❌ Failed to load pdf-parse properly:", err);
+}
+
 
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
