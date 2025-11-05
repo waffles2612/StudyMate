@@ -3,7 +3,14 @@ import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LandingPage from "./components/LandingPage";
 import Dashboard from "./components/Dashboard";
-import { signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider } from "firebase/auth";
+import {
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  signOut,
+  onAuthStateChanged,
+  GoogleAuthProvider,
+} from "firebase/auth";
 import { auth, provider } from "./firebase";
 import ToDo from "./components/ToDo";
 
@@ -34,33 +41,70 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  // ✅ Single source of truth for login
+  // ✅ Handle redirect login result (for Render)
+  // ✅ Handle redirect login result (for Render)
+useEffect(() => {
+  getRedirectResult(auth)
+    .then((result) => {
+      if (result?.user) {
+        console.log("✅ Redirect login success:", result.user.email);
+
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const accessToken = credential?.accessToken;
+
+        if (accessToken) {
+          localStorage.setItem("googleAccessToken", accessToken);
+        }
+
+        const userData = {
+          name: result.user.displayName,
+          email: result.user.email,
+          picture: result.user.photoURL,
+          uid: result.user.uid,
+        };
+        setUser(userData);
+
+        // ✅ Force redirect to dashboard immediately
+        window.location.href = "/dashboard";
+      }
+    })
+    .catch((error) => {
+      if (error.code !== "auth/no-auth-event") {
+        console.error("Redirect login error:", error);
+      }
+    });
+}, []);
+
+
+  // ✅ Single source of truth for login (works both locally + Render)
   const handleLogin = async () => {
     try {
-      // Add Calendar permission scope
       provider.addScope("https://www.googleapis.com/auth/calendar.events");
 
-      const result = await signInWithPopup(auth, provider);
+      if (window.location.hostname.includes("localhost")) 
+      {
+        // Local development
+        const result = await signInWithPopup(auth, provider);
 
-      // ✅ Correct token extraction
-      const credential = GoogleAuthProvider.credentialFromResult(result);
-      const accessToken = credential?.accessToken;
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const accessToken = credential?.accessToken;
 
-      if (accessToken) {
-        localStorage.setItem("googleAccessToken", accessToken);
-        console.log("✅ Google Access Token saved:", accessToken);
+        if (accessToken) {
+          localStorage.setItem("googleAccessToken", accessToken);
+          console.log("✅ Google Access Token saved:", accessToken);
+        }
+
+        const userData = {
+          name: result.user.displayName,
+          email: result.user.email,
+          picture: result.user.photoURL,
+          uid: result.user.uid,
+        };
+        setUser(userData);
       } else {
-        console.warn("⚠️ No access token received from Google login.");
+        // ✅ Use redirect login on Render to avoid popup block
+        await signInWithRedirect(auth, provider);
       }
-
-      // ✅ Store user info
-      const userData = {
-        name: result.user.displayName,
-        email: result.user.email,
-        picture: result.user.photoURL,
-        uid: result.user.uid,
-      };
-      setUser(userData);
     } catch (error) {
       console.error("❌ Google login failed:", error);
       alert("Google login failed. Please check the console for details.");

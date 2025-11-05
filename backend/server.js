@@ -8,6 +8,9 @@ const pdfParse = require("pdf-parse");
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 //const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
 const admin = require("firebase-admin");
+// ✅ Load .env first
+dotenv.config();
+
 
 // ✅ Load service account JSON from environment variable
 let serviceAccount = null;
@@ -29,8 +32,6 @@ if (process.env.SERVICE_ACCOUNT_KEY) {
 
 const db = admin.database();
 
-// ✅ Load .env first
-dotenv.config();
 
 // ✅ Check Gemini API key
 if (!process.env.GEMINI_API_KEY) {
@@ -44,9 +45,14 @@ if (!process.env.GEMINI_API_KEY) {
 
 const app = express();
 app.use(cors({
-  origin: "http://localhost:3000", // your frontend URL
+  origin: [
+    "https://study-mate-chi-six.vercel.app", 
+    "https://frontend-50cv.onrender.com",
+    "http://localhost:3000"
+  ],
   credentials: true
 }));
+
 
 app.use(bodyParser.json());
 
