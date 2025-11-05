@@ -10,7 +10,7 @@ const firebaseConfig = {
   authDomain: "studymate-e2268.firebaseapp.com",
   databaseURL: "https://studymate-e2268-default-rtdb.firebaseio.com",
   projectId: "studymate-e2268",
-  storageBucket: "studymate-e2268.firebasestorage.app",
+  storageBucket: "studymate-e2268.appspot.com", // ✅ fixed this line
   messagingSenderId: "983818270750",
   appId: "1:983818270750:web:ac96e821c515a62f84960f",
   measurementId: "G-BL9EM2JTXD"
