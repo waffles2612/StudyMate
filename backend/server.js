@@ -9,7 +9,6 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const admin = require("firebase-admin");
 
-const serviceAccount = JSON.parse(process.env.SERVICE_ACCOUNT_KEY);
  // download from Firebase Console
 
 admin.initializeApp({
@@ -465,6 +464,7 @@ app.delete("/api/todos/:taskId", async (req, res) => {
 });
 // -------------------------
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`✅ StudyMate API running on http://localhost:${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ StudyMate API running on port ${PORT}`);
 });
+
