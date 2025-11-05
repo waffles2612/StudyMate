@@ -24,22 +24,29 @@ function App() {
 
   // ✅ Listen for login/logout state changes
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser({
-          name: currentUser.displayName,
-          email: currentUser.email,
-          picture: currentUser.photoURL,
-          uid: currentUser.uid,
-        });
-      } else {
-        setUser(null);
-      }
-      setLoading(false);
-    });
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    if (currentUser) {
+      const userData = {
+        name: currentUser.displayName,
+        email: currentUser.email,
+        picture: currentUser.photoURL,
+        uid: currentUser.uid,
+      };
+      setUser(userData);
 
-    return () => unsubscribe();
-  }, []);
+      // ✅ Redirect if logged in and not already on dashboard
+      if (window.location.pathname === "/") {
+        window.location.replace("/dashboard");
+      }
+    } else {
+      setUser(null);
+    }
+    setLoading(false);
+  });
+
+  return () => unsubscribe();
+}, []);
+
 
   // ✅ Handle redirect login result (for Render)
   // ✅ Handle redirect login result (for Render)
