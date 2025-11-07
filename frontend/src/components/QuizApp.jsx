@@ -119,19 +119,55 @@ export default function App() {
       // ✅ Create a reference for this user's quiz results
       const userResultsRef = ref(db, `quizResults/${user.uid}`);
       const newResultRef = push(userResultsRef); // auto-generate unique ID
+      /*const istDateTime = new Date().toLocaleString("en-IN", {
+  timeZone: "Asia/Kolkata",
+  hour12: false, // optional: use 24-hour format
+});*/
+       // 🕒 Generate IST date & time
+const now = new Date();
+const istDate = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Asia/Kolkata",
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+}).format(now); // => "07/11/2025"
+
+const istTime = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Asia/Kolkata",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+}).format(now); // => "09:45:32"
+
+// ✅ Save to Firebase
+await set(newResultRef, {
+  email: user.email,
+  quizId,
+  score: finalScore,
+  totalQuestions,
+  submittedAt: now.toISOString(),
+  userId: user.uid,
+
+  // 🆕 New fields
+  dateSubmitted: istDate,   // "07/11/2025"
+  timeSubmitted: istTime,   // "09:45:32"
+});
 
       // ✅ Save to Firebase
-      await set(newResultRef, {
-        email: user.email,
-        quizId,
-        score: finalScore,
-        totalQuestions, // ✅ added
-        submittedAt: new Date().toISOString(),
-        userId: user.uid,
-      });
+      //await set(newResultRef, {
+        //email: user.email,
+       // quizId,
+       // score: finalScore,
+       // totalQuestions, // ✅ added
+       // submittedAt: new Date().toISOString(),
+       // userId: user.uid,
+        //dateTime: istDateTime,
+      //});
 
       console.log("✅ Quiz result saved successfully to Firebase!");
       alert(`🎉 Quiz submitted successfully! Score: ${finalScore}/${totalQuestions}`);
+      window.location.href = "/dashboard";
     } catch (err) {
       console.error("❌ Error saving quiz result:", err);
       alert("⚠️ Failed to save quiz result. Please try again.");
